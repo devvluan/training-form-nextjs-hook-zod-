@@ -1,11 +1,11 @@
 "use client";
-import Image from "next/image";
 import { useState } from "react";
 import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod'
 
 const createUserFormSchema = z.object({
+  avatar: z.instanceof(FileList),
   name: z.string()
   .nonempty('O nome é obrigatório')
   .transform(name => {
@@ -71,6 +71,17 @@ function createUser(data: CreateUserFormData) {
       onSubmit={handleSubmit(createUser)} 
       className="flex flex-col gap-4 w-full max-w-xs"
       >
+        <div className="flex flex-col gap-1">
+          <label htmlFor="avatar">Avatar</label>
+          <input 
+          type="file"
+          accept="image" 
+          className="border border-zinc-800 shadow-sm rounded h-10 px-3 bg-zinc-900 text-white"
+          {...register('avatar')}   
+          />
+          {errors.avatar && <span className="text-red-500 text-sm">{errors.avatar.message}</span>}
+        </div>
+
         <div className="flex flex-col gap-1">
           <label htmlFor="name">Nome</label>
           <input 
