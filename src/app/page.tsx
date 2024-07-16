@@ -3,9 +3,12 @@ import { useState } from "react";
 import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod'
+import { supabase } from "@/lib/supabase";
 
 const createUserFormSchema = z.object({
-  avatar: z.instanceof(FileList),
+  avatar: z.instanceof(FileList)
+  .transform(list => list.item(0)!)
+  .refine(file => file!.size <= 5 * 1024 * 1024, 'O arquivo precisa ter mais que 5MB'),
   name: z.string()
   .nonempty('O nome é obrigatório')
   .transform(name => {
@@ -62,6 +65,11 @@ function addNewTech() {
 }
 
 function createUser(data: CreateUserFormData) {
+  supabase.storage.from('form-trainer').upload(
+    data.avatar.name, 
+    data.avatar
+  )
+
   setOutput(JSON.stringify(data, null, 2))
 }
 
@@ -75,8 +83,7 @@ function createUser(data: CreateUserFormData) {
           <label htmlFor="avatar">Avatar</label>
           <input 
           type="file"
-          accept="image" 
-          className="border border-zinc-800 shadow-sm rounded h-10 px-3 bg-zinc-900 text-white"
+          accept="image/*" 
           {...register('avatar')}   
           />
           {errors.avatar && <span className="text-red-500 text-sm">{errors.avatar.message}</span>}
